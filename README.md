@@ -69,7 +69,7 @@ python manage.py runserver
 5. Compete with others on the leaderboard
 
 ## Contributors/Teammates
-- Soumyshree Biswas
-- Piyali Sarkar
-- Sylvia Bhattacharjee
-- Shreya Dutta
+- Soumyshree Biswas [@soumyashb](https://github.com/soumyashb)
+- Piyali Sarkar [@loopPXy](https://github.com/loopPXy)
+- Sylvia Bhattacharjee [@8910sylvia](https://github.com/8910sylvia)
+- Shreya Dutta [@arceuzvx](https://github.com/arceuzvx)
