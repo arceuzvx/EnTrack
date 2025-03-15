@@ -1,0 +1,205 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Account Settings - Entrack{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row gap-6">
+    <!-- Sidebar -->
+    <div class="w-full md:w-1/4">
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6 card animate-on-scroll">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-16 h-16 profile-circle">
+                    <span class="text-2xl font-bold">{{ user.username.0|upper }}</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold">{{ user.username }}</h2>
+                    <p class="text-gray-500">{{ user.email }}</p>
+                </div>
+            </div>
+            <div class="border-t pt-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="{% url 'dashboard' %}" class="w-full block py-2 px-4 rounded hover:bg-green-50">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'history' %}" class="w-full block py-2 px-4 rounded hover:bg-green-50">
+                            Energy History
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'user_settings' %}" class="w-full block py-2 px-4 rounded hover:bg-green-50 bg-green-50 text-green-600">
+                            Account Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="w-full md:w-3/4">
+        <div class="grid grid-cols-1 gap-6">
+            <!-- Profile Information -->
+            <div class="bg-white rounded-lg shadow-md p-6 card card-gradient-1 animate-on-scroll">
+                <div class="card-header">
+                    <h3 class="font-bold text-lg mb-2 text-white section-title">Profile Information</h3>
+                </div>
+                <div class="p-4 bg-white rounded-lg mt-4">
+                    <form method="POST" action="{% url 'update_profile' %}" class="space-y-4">
+                        {% csrf_token %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label for="id_first_name" class="block text-gray-700 mb-2">First Name</label>
+                                <input type="text" name="first_name" id="id_first_name" value="{{ user.first_name }}" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="id_last_name" class="block text-gray-700 mb-2">Last Name</label>
+                                <input type="text" name="last_name" id="id_last_name" value="{{ user.last_name }}" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_email" class="block text-gray-700 mb-2">Email Address</label>
+                            <input type="email" name="email" id="id_email" value="{{ user.email }}" class="form-control">
+                        </div>
+                        <button type="submit" class="btn-primary">
+                            Update Profile
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Change Password -->
+            <div class="bg-white rounded-lg shadow-md p-6 card card-gradient-2 animate-on-scroll">
+                <div class="card-header">
+                    <h3 class="font-bold text-lg mb-2 text-white section-title">Change Password</h3>
+                </div>
+                <div class="p-4 bg-white rounded-lg mt-4">
+                    <form method="POST" action="{% url 'change_password' %}" class="space-y-4">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id_old_password" class="block text-gray-700 mb-2">Current Password</label>
+                            <input type="password" name="old_password" id="id_old_password" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="id_new_password1" class="block text-gray-700 mb-2">New Password</label>
+                            <input type="password" name="new_password1" id="id_new_password1" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="id_new_password2" class="block text-gray-700 mb-2">Confirm New Password</label>
+                            <input type="password" name="new_password2" id="id_new_password2" class="form-control">
+                        </div>
+                        <button type="submit" class="btn-primary">
+                            Change Password
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Preferences -->
+            <div class="bg-white rounded-lg shadow-md p-6 card card-gradient-3 animate-on-scroll">
+                <div class="card-header">
+                    <h3 class="font-bold text-lg mb-2 text-white section-title">Preferences</h3>
+                </div>
+                <div class="p-4 bg-white rounded-lg mt-4">
+                    <form method="POST" action="{% url 'update_preferences' %}" class="space-y-4">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id_energy_unit" class="block text-gray-700 mb-2">Energy Unit</label>
+                            <select name="energy_unit" id="id_energy_unit" class="form-control">
+                                <option value="kwh" {% if profile.energy_unit == 'kwh' %}selected{% endif %}>Kilowatt-hour (kWh)</option>
+                                <option value="mwh" {% if profile.energy_unit == 'mwh' %}selected{% endif %}>Megawatt-hour (MWh)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_gas_unit" class="block text-gray-700 mb-2">Gas Unit</label>
+                            <select name="gas_unit" id="id_gas_unit" class="form-control">
+                                <option value="therms" {% if profile.gas_unit == 'therms' %}selected{% endif %}>Therms</option>
+                                <option value="cubic_feet" {% if profile.gas_unit == 'cubic_feet' %}selected{% endif %}>Cubic Feet</option>
+                                <option value="cubic_meters" {% if profile.gas_unit == 'cubic_meters' %}selected{% endif %}>Cubic Meters</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-gray-700 mb-2">Notification Preferences</label>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="email_notifications" id="id_email_notifications" {% if profile.email_notifications %}checked{% endif %} class="mr-2">
+                                    <label for="id_email_notifications">Receive email notifications</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="monthly_report" id="id_monthly_report" {% if profile.monthly_report %}checked{% endif %} class="mr-2">
+                                    <label for="id_monthly_report">Receive monthly energy report</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="tips_notifications" id="id_tips_notifications" {% if profile.tips_notifications %}checked{% endif %} class="mr-2">
+                                    <label for="id_tips_notifications">Receive energy saving tips</label>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary">
+                            Save Preferences
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Delete Account -->
+            <div class="bg-white rounded-lg shadow-md p-6 card animate-on-scroll">
+                <h3 class="font-bold text-lg mb-4 section-title section-title-danger">Delete Account</h3>
+                <p class="text-gray-700 mb-4">Warning: This action cannot be undone. All your data will be permanently deleted.</p>
+                <button type="button" class="btn-danger" data-toggle="modal" data-target="#deleteAccountModal">
+                    Delete My Account
+                </button>
+                
+                <!-- Delete Account Modal -->
+                <div class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="deleteAccountModal">
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <div class="mt-3 text-center">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Account</h3>
+                            <div class="mt-2 px-7 py-3">
+                                <p class="text-sm text-gray-500">
+                                    Are you sure you want to delete your account? This action cannot be undone.
+                                </p>
+                            </div>
+                            <div class="items-center px-4 py-3">
+                                <form method="POST" action="{% url 'delete_account' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-danger w-full mb-2">
+                                        Yes, Delete My Account
+                                    </button>
+                                </form>
+                                <button id="cancelDelete" class="btn-secondary w-full">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteBtn = document.querySelector('[data-target="#deleteAccountModal"]');
+        const deleteModal = document.getElementById('deleteAccountModal');
+        const cancelBtn = document.getElementById('cancelDelete');
+        
+        if (deleteBtn && deleteModal && cancelBtn) {
+            deleteBtn.addEventListener('click', function() {
+                deleteModal.classList.remove('hidden');
+            });
+            
+            cancelBtn.addEventListener('click', function() {
+                deleteModal.classList.add('hidden');
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %} 

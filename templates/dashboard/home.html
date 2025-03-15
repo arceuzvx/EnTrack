@@ -1,0 +1,133 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Entrack - Energy Tracking Dashboard{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-white rounded-lg shadow-lg p-6 mb-8 card animate-on-scroll">
+    <div class="flex flex-col md:flex-row items-center">
+        <div class="md:w-1/2 mb-6 md:mb-0 md:pr-8">
+            <h2 class="text-3xl font-bold mb-4 text-green-600 section-title">Track Your Energy, Save the Planet</h2>
+            <p class="text-gray-700 mb-6">Monitor your energy consumption, reduce your carbon footprint, and join a community of environmentally conscious individuals making a difference.</p>
+            <div class="flex space-x-4">
+                <a href="{% url 'calculator' %}" class="btn-primary">
+                    Start Tracking
+                </a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn-secondary">
+                        View Dashboard
+                    </a>
+                {% else %}
+                    <a href="{% url 'register' %}" class="btn-secondary">
+                        Sign Up
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="md:w-1/2">
+            <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Sustainable Energy" class="rounded-lg shadow-md w-full">
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow-lg p-6 card card-gradient-1 animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-xl font-bold mb-2 text-white">Track Energy Usage</h3>
+        </div>
+        <div class="p-4 bg-white rounded-lg mt-4">
+            <p class="text-gray-700 mb-4">Monitor your electricity and gas consumption with easy-to-use tools and visualize your usage patterns.</p>
+            <a href="{% url 'calculator' %}" class="text-green-600 font-semibold hover:text-green-700">Try the Calculator →</a>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-lg p-6 card card-gradient-2 animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-xl font-bold mb-2 text-white">Reduce Your Footprint</h3>
+        </div>
+        <div class="p-4 bg-white rounded-lg mt-4">
+            <p class="text-gray-700 mb-4">Get personalized tips to reduce your energy consumption and carbon footprint based on your usage patterns.</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="text-green-600 font-semibold hover:text-green-700">View Your Dashboard →</a>
+            {% else %}
+                <a href="{% url 'register' %}" class="text-green-600 font-semibold hover:text-green-700">Sign Up Now →</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-lg p-6 card card-gradient-3 animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-xl font-bold mb-2 text-white">Join the Community</h3>
+        </div>
+        <div class="p-4 bg-white rounded-lg mt-4">
+            <p class="text-gray-700 mb-4">Compete with others on the leaderboard and see how your energy-saving efforts compare to the community.</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="text-green-600 font-semibold hover:text-green-700">Check Leaderboard →</a>
+            {% else %}
+                <a href="{% url 'register' %}" class="text-green-600 font-semibold hover:text-green-700">Join Now →</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="bg-white rounded-lg shadow-lg p-6 mb-8 animate-on-scroll">
+    <h2 class="text-2xl font-bold mb-6 text-green-600 section-title">How It Works</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
+        <div class="text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl font-bold text-green-600">1</span>
+            </div>
+            <h3 class="font-bold mb-2">Sign Up</h3>
+            <p class="text-gray-600">Create your free account to get started with energy tracking.</p>
+        </div>
+        
+        <div class="text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl font-bold text-green-600">2</span>
+            </div>
+            <h3 class="font-bold mb-2">Enter Data</h3>
+            <p class="text-gray-600">Input your monthly electricity and gas usage data.</p>
+        </div>
+        
+        <div class="text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl font-bold text-green-600">3</span>
+            </div>
+            <h3 class="font-bold mb-2">Get Insights</h3>
+            <p class="text-gray-600">View detailed charts and analysis of your energy consumption.</p>
+        </div>
+        
+        <div class="text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl font-bold text-green-600">4</span>
+            </div>
+            <h3 class="font-bold mb-2">Save Energy</h3>
+            <p class="text-gray-600">Follow personalized tips to reduce your energy usage and costs.</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="bg-green-600 rounded-lg shadow-lg p-8 text-white text-center animate-on-scroll">
+    <h2 class="text-3xl font-bold mb-4">Ready to Start Saving Energy?</h2>
+    <p class="text-xl mb-6 max-w-2xl mx-auto">Join thousands of users who are tracking their energy usage and making a positive impact on the environment.</p>
+    <div class="flex justify-center space-x-4">
+        {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="bg-white text-green-600 px-6 py-3 rounded-lg font-bold hover:bg-green-50 transition">
+                Go to Dashboard
+            </a>
+        {% else %}
+            <a href="{% url 'register' %}" class="bg-white text-green-600 px-6 py-3 rounded-lg font-bold hover:bg-green-50 transition">
+                Sign Up Now
+            </a>
+            <a href="{% url 'login' %}" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-bold hover:bg-white hover:text-green-600 transition">
+                Log In
+            </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %} 

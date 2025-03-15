@@ -1,0 +1,86 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Energy History - Entrack{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row gap-6">
+    <!-- Sidebar -->
+    <div class="w-full md:w-1/4">
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6 card animate-on-scroll">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-16 h-16 profile-circle">
+                    <span class="text-2xl font-bold">{{ user.username.0|upper }}</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold">{{ user.username }}</h2>
+                    <p class="text-gray-500">{{ user.email }}</p>
+                </div>
+            </div>
+            <div class="border-t pt-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="{% url 'dashboard' %}" class="w-full block py-2 px-4 rounded hover:bg-green-50">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'history' %}" class="w-full block py-2 px-4 rounded hover:bg-green-50 bg-green-50 text-green-600">
+                            Energy History
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'user_settings' %}" class="w-full block py-2 px-4 rounded hover:bg-green-50">
+                            Account Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="w-full md:w-3/4">
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6 card animate-on-scroll">
+            <h3 class="font-bold text-lg mb-4 section-title">Energy Usage History</h3>
+            <canvas id="historyChart" height="300"></canvas>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 card animate-on-scroll">
+            <h3 class="font-bold text-lg mb-4 section-title">Recent Entries</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="py-3 px-4 text-left">Date</th>
+                            <th class="py-3 px-4 text-right">Electricity (kWh)</th>
+                            <th class="py-3 px-4 text-right">Gas (therms)</th>
+                            <th class="py-3 px-4 text-right">Energy Saved</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in energy_data %}
+                            <tr class="border-b">
+                                <td class="py-3 px-4">{{ data.date|date:"M d, Y" }}</td>
+                                <td class="py-3 px-4 text-right">{{ data.electricity|floatformat:2 }}</td>
+                                <td class="py-3 px-4 text-right">{{ data.gas|floatformat:2 }}</td>
+                                <td class="py-3 px-4 text-right">{{ data.saved|floatformat:2 }} kWh</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="py-4 text-center text-gray-500">No energy data available yet. Use the calculator to add your first entry.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-6 text-center">
+                <a href="{% url 'calculator' %}" class="btn-primary">
+                    Add New Entry
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

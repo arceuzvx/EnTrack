@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Entrack - Energy Tracking Dashboard{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-100">
+    <nav class="primary-gradient text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Entrack</h1>
+            <div class="flex items-center space-x-6">
+                <a href="{% url 'home' %}" class="hover:text-green-200">Home</a>
+                <a href="{% url 'calculator' %}" class="hover:text-green-200">Calculator</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="hover:text-green-200">Dashboard</a>
+                    <a href="{% url 'history' %}" class="hover:text-green-200">History</a>
+                    <div class="relative">
+                        <a href="{% url 'user_settings' %}" class="nav-button px-4 py-2 rounded-full bg-white text-green-600 hover:bg-green-50">
+                            {{ user.username }}
+                        </a>
+                    </div>
+                    <a href="{% url 'logout' %}" class="hover:text-green-200">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-button px-4 py-2 rounded-full bg-white text-green-600 hover:bg-green-50">
+                        Login
+                    </a>
+                    <a href="{% url 'register' %}" class="hover:text-green-200">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 space-y-8">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="bg-{{ message.tags }}-100 border-l-4 border-{{ message.tags }}-500 text-{{ message.tags }}-700 p-4 mb-6 rounded">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="primary-gradient text-white py-8 mt-12">
+        <div class="container mx-auto text-center">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Entrack</h3>
+                    <p>Helping you track and reduce your energy consumption for a greener planet.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'calculator' %}" class="hover:text-green-200">Calculator</a></li>
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'dashboard' %}" class="hover:text-green-200">Dashboard</a></li>
+                            <li><a href="{% url 'history' %}" class="hover:text-green-200">History</a></li>
+                        {% else %}
+                            <li><a href="{% url 'login' %}" class="hover:text-green-200">Login</a></li>
+                            <li><a href="{% url 'register' %}" class="hover:text-green-200">Register</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Contact Us</h3>
+                    <p>Email: info@entrack.com</p>
+                    <p>Phone: (123) 456-7890</p>
+                </div>
+            </div>
+            <div class="border-t border-green-500 pt-6">
+                <p>&copy; {% now "Y" %} Entrack. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 
