@@ -120,7 +120,7 @@ body {
 .btn-primary:hover {
     background-color: #15803d;
     transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.3);
+    box-shadow: 0 10px 15px -3px rgba(23, 163, 74, 0.3);
 }
 
 .btn-secondary {
@@ -177,7 +177,7 @@ body {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    box-shadow: 0 8px 32px 0 rgba(30, 38, 135, 0.37);
 }
 
 .section-title {
