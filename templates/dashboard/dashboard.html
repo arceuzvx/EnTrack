@@ -1,290 +1,282 @@
 {% extends 'dashboard/base.html' %}
-{% load static %}
-
-{% block title %}Dashboard - Entrack{% endblock %}
-
-{% block content %}
-<style>
-    .profile-circle {
-        width: 128px;
-        height: 64px;
-        border-radius: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #f0f0f0;
-    }
-</style>
-<div class="flex flex-col md:flex-row gap-6">
-    <!-- Sidebar -->
-    <div class="w-full md:w-1/4">
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6 card animate-on-scroll">
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="w-16 h-16 profile-circle">
-                    <span class="text-2xl font-bold">{{ user.username.0|upper }}</span>
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold">{{ user.username }}</h2>
-                    <p class="text-gray-500">{{ user.email }}</p>
-                </div>
-            </div>
-            <div class="border-t pt-4">
-                <ul class="space-y-2">
-                    <li>
-                        <a href="{% url 'dashboard' %}" class="w-full block py-2 px-4 rounded hover:bg-green-50 bg-green-50 text-green-600">
-                            Dashboard
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'history' %}" class="w-full block py-2 px-4 rounded hover:bg-green-50">
-                            Energy History
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'user_settings' %}" class="w-full block py-2 px-4 rounded hover:bg-green-50">
-                            Account Settings
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-lg shadow-md p-6 card card-gradient-1 animate-on-scroll">
-            <div class="card-header">
-                <h3 class="font-bold text-lg mb-2 text-gray-700 section-title">Your Impact</h3>
-            </div>
-            <div class="p-4 bg-white rounded-lg mt-4 space-y-4">
-                {% if profile.total_energy_saved > 0 %}
-                <div>
-                    <p class="text-gray-600">Total Energy Saved</p>
-                    <p class="text-2xl font-bold text-green-600">{{ profile.total_energy_saved|floatformat:2 }} kWh</p>
-                </div>
-                <div>
-                    <p class="text-gray-600">CO₂ Reduction</p>
-                    <p class="text-2xl font-bold text-blue-600">{{ profile.get_co2_reduction|floatformat:2 }} kg</p>
-                </div>
-                <div>
-                    <p class="text-gray-600">Equivalent to</p>
-                    <p class="text-lg text-green-600">{{ profile.get_tree_equivalent|floatformat:1 }} trees planted</p>
-                </div>
-                {% else %}
-                <div class="text-center py-4">
-                    <p class="text-gray-600 mb-2">Start tracking your energy usage to see your environmental impact!</p>
-                    <a href="{% url 'calculator' %}" class="btn-primary inline-block">Enter Your First Data</a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <!-- Main Content -->
-    <div class="w-full md:w-3/4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div class="bg-white rounded-lg shadow-md p-6 card card-gradient-2 animate-on-scroll">
-                <div class="card-header">
-                    <h3 class="font-bold text-lg mb-2 text-gray-700 section-title">Monthly Progress</h3>
-                </div>
-                <div class="p-4 bg-white rounded-lg mt-4">
-                    <canvas id="monthlyProgressChart" height="200"></canvas>
-                </div>
-            </div>
-            <div class="bg-white rounded-lg shadow-md p-6 card card-gradient-3 animate-on-scroll">
-                <div class="card-header">
-                    <h3 class="font-bold text-lg mb-2 text-gray-700 section-title">Energy Breakdown</h3>
-                </div>
-                <div class="p-4 bg-white rounded-lg mt-4">
-                    <canvas id="energyBreakdownChart" height="200"></canvas>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6 card animate-on-scroll">
-            <h3 class="font-bold text-lg mb-4 section-title">Leaderboard</h3>
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="py-3 px-4 text-left">Rank</th>
-                            <th class="py-3 px-4 text-left">User</th>
-                            <th class="py-3 px-4 text-right">Energy Saved</th>
-                            <th class="py-3 px-4 text-right">CO₂ Reduction</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for entry in leaderboard_entries %}
-                            <tr class="border-b {% if entry.user == user %}bg-green-50{% endif %}">
-                                <td class="py-3 px-4">{{ entry.rank }}</td>
-                                <td class="py-3 px-4">{{ entry.user.username }}</td>
-                                <td class="py-3 px-4 text-right">{{ entry.energy_saved|floatformat:2 }} kWh</td>
-                                <td class="py-3 px-4 text-right">{{ entry.co2_reduction|floatformat:2 }} kg</td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="4" class="py-4 text-center text-gray-500">No leaderboard data available yet.</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white rounded-lg shadow-md p-6 card card-gradient-4 animate-on-scroll">
-                <div class="card-header">
-                    <h3 class="font-bold text-lg mb-2 text-gray-700 section-title">Energy Saving Tips</h3>
-                </div>
-                <div class="p-4 bg-white rounded-lg mt-4">
-                    <div class="bg-green-50 p-4 rounded-lg">
-                        <p id="currentTip" class="text-green-800">{{ energy_tip }}</p>
-                        <button id="newTipBtn" class="mt-4 btn-primary">
-                            Get New Tip
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-white rounded-lg shadow-md p-6 card animate-on-scroll">
-                <h3 class="font-bold text-lg mb-4 section-title">Energy Saving Tasks</h3>
-                <div class="space-y-4">
-                    <ul class="space-y-2">
-                        {% for task in tasks %}
-                            <li class="p-3 bg-gray-50 rounded-lg shadow-sm flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <form method="POST" action="/task/{{ task.id }}/toggle/" class="mr-3">
-                                        {% csrf_token %}
-                                        <button type="submit" class="w-5 h-5 border border-gray-400 rounded {% if task.completed %}bg-green-500 border-green-500{% endif %}" title="Toggle task completion">
-                                        </button>
-                                    </form>
-                                    <span class="{% if task.completed %}line-through text-gray-500{% endif %}">{{ task.text }}</span>
-                                </div>
-                                <form method="POST" action="/task/{{ task.id }}/delete/">
-                                    {% csrf_token %}
-                                    <button type="submit" class="text-red-500 hover:text-red-700" title="Delete task">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </form>
-                            </li>
-                        {% empty %}
-                            <li class="p-3 bg-gray-50 rounded-lg text-center text-gray-500">No tasks yet. Add one below!</li>
-                        {% endfor %}
-                    </ul>
-                    
-                    <form id="add-task-form" method="post" action="/task/add/" class="mt-4">
-                        {% csrf_token %}
-                        <div class="flex space-x-2">
-                            <input type="text" name="text" class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" placeholder="Add a new task..." required>
-                            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none">
-                                Add Task
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    // Function to get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    // Set up CSRF token for AJAX requests
-    const csrftoken = getCookie('csrftoken');
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-            }
-        }
-    });
-
-    $(document).ready(function() {
-        console.log("Document ready");
-        
-        // Handle task addition
-        $('#add-task-form').submit(function(event) {
-            event.preventDefault();
-            console.log("Add task form submitted");
-            const form = $(this);
-            $.ajax({
-                type: form.attr('method'),
-                url: form.attr('action'),
-                data: form.serialize(),
-                success: function(response) {
-                    console.log("Task added successfully:", response);
-                    // Update the task list dynamically
-                    if ($('.space-y-2 li').length === 1 && $('.space-y-2 li').text().trim() === 'No tasks yet. Add one below!') {
-                        $('.space-y-2').empty();
-                    }
-                    $('.space-y-2').append(response.new_task_html);
-                    form.find('input[type="text"]').val(''); // Clear input
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error adding task:", error);
-                }
-            });
-        });
-
-        // Handle task toggling
-        $('.space-y-2').on('submit', 'form[action^="/task/"][action$="/toggle/"]', function(event) {
-            event.preventDefault();
-            console.log("Toggle task form submitted");
-            const form = $(this);
-            $.ajax({
-                type: form.attr('method'),
-                url: form.attr('action'),
-                data: form.serialize(),
-                success: function(response) {
-                    console.log("Task toggled successfully:", response);
-                    // Update the task status dynamically
-                    form.closest('li').replaceWith(response.updated_task_html);
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error toggling task:", error);
-                }
-            });
-        });
-
-        // Handle task deletion
-        $('.space-y-2').on('submit', 'form[action^="/task/"][action$="/delete/"]', function(event) {
-            event.preventDefault();
-            console.log("Delete task form submitted");
-            const form = $(this);
-            $.ajax({
-                type: form.attr('method'),
-                url: form.attr('action'),
-                data: form.serialize(),
-                success: function(response) {
-                    console.log("Task deleted successfully");
-                    // Remove the task from the list
-                    form.closest('li').remove();
-                    // If no tasks left, show the "No tasks yet" message
-                    if ($('.space-y-2 li').length === 0) {
-                        $('.space-y-2').html('<li class="p-3 bg-gray-50 rounded-lg text-center text-gray-500">No tasks yet. Add one below!</li>');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error deleting task:", error);
-                }
-            });
-        });
-    });
-</script>
-{% endblock %} 
+ {% load static %}
+ 
+ {% block title %}Dashboard - Entrack{% endblock %}
+ 
+ {% block content %}
+ <style>
+     .profile-circle {
+         width: 128px;
+         height: 64px;
+         border-radius: 15px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         background-color: #f0f0f0;
+     }
+ </style>
+ <div class="flex flex-col md:flex-row gap-6">
+     <!-- Sidebar -->
+     <div class="w-full md:w-1/4">
+         <div class="bg-white rounded-lg shadow-md p-6 mb-6 card animate-on-scroll">
+             <div class="flex items-center space-x-4 mb-6">
+                 <div class="w-16 h-16 profile-circle">
+                     <span class="text-2xl font-bold">{{ user.username.0|upper }}</span>
+                 </div>
+                 <div>
+                     <h2 class="text-xl font-bold">{{ user.username }}</h2>
+                     <p class="text-gray-500">{{ user.email }}</p>
+                 </div>
+             </div>
+             <div class="border-t pt-4">
+                 <ul class="space-y-2">
+                     <li>
+                         <a href="{% url 'dashboard' %}" class="w-full block py-2 px-4 rounded hover:bg-green-50 bg-green-50 text-green-600">
+                             Dashboard
+                         </a>
+                     </li>
+                     <li>
+                         <a href="{% url 'history' %}" class="w-full block py-2 px-4 rounded hover:bg-green-50">
+                             Energy History
+                         </a>
+                     </li>
+                     <li>
+                         <a href="{% url 'user_settings' %}" class="w-full block py-2 px-4 rounded hover:bg-green-50">
+                             Account Settings
+                         </a>
+                     </li>
+                 </ul>
+             </div>
+         </div>
+ 
+         <div class="bg-white rounded-lg shadow-md p-6 card card-gradient-1 animate-on-scroll">
+             <div class="card-header">
+                 <h3 class="font-bold text-lg mb-2 text-gray-700 section-title">Your Impact</h3>
+             </div>
+             <div class="p-4 bg-white rounded-lg mt-4 space-y-4">
+                 <div>
+                     <p class="text-gray-600">Total Energy Saved</p>
+                     <p class="text-2xl font-bold text-green-600">{{ profile.total_energy_saved|floatformat:2 }} kWh</p>
+                 </div>
+                 <div>
+                     <p class="text-gray-600">CO₂ Reduction</p>
+                     <p class="text-2xl font-bold text-blue-600">{{ profile.get_co2_reduction|floatformat:2 }} kg</p>
+                 </div>
+                 <div>
+                     <p class="text-gray-600">Equivalent to</p>
+                     <p class="text-lg text-green-600">{{ profile.get_tree_equivalent|floatformat:1 }} trees planted</p>
+                 </div>
+             </div>
+         </div>
+     </div>
+ 
+     <!-- Main Content -->
+     <div class="w-full md:w-3/4">
+         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+             <div class="bg-white rounded-lg shadow-md p-6 card card-gradient-2 animate-on-scroll">
+                 <div class="card-header">
+                     <h3 class="font-bold text-lg mb-2 text-gray-700 section-title">Monthly Progress</h3>
+                 </div>
+                 <div class="p-4 bg-white rounded-lg mt-4">
+                     <canvas id="monthlyProgressChart" height="200"></canvas>
+                 </div>
+             </div>
+             <div class="bg-white rounded-lg shadow-md p-6 card card-gradient-3 animate-on-scroll">
+                 <div class="card-header">
+                     <h3 class="font-bold text-lg mb-2 text-gray-700 section-title">Energy Breakdown</h3>
+                 </div>
+                 <div class="p-4 bg-white rounded-lg mt-4">
+                     <canvas id="energyBreakdownChart" height="200"></canvas>
+                 </div>
+             </div>
+         </div>
+ 
+         <div class="bg-white rounded-lg shadow-md p-6 mb-6 card animate-on-scroll">
+             <h3 class="font-bold text-lg mb-4 section-title">Leaderboard</h3>
+             <div class="overflow-x-auto">
+                 <table class="min-w-full bg-white">
+                     <thead class="bg-gray-100">
+                         <tr>
+                             <th class="py-3 px-4 text-left">Rank</th>
+                             <th class="py-3 px-4 text-left">User</th>
+                             <th class="py-3 px-4 text-right">Energy Saved</th>
+                             <th class="py-3 px-4 text-right">CO₂ Reduction</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         {% for entry in leaderboard_entries %}
+                             <tr class="border-b {% if entry.user == user %}bg-green-50{% endif %}">
+                                 <td class="py-3 px-4">{{ entry.rank }}</td>
+                                 <td class="py-3 px-4">{{ entry.user.username }}</td>
+                                 <td class="py-3 px-4 text-right">{{ entry.energy_saved|floatformat:2 }} kWh</td>
+                                 <td class="py-3 px-4 text-right">{{ entry.co2_reduction|floatformat:2 }} kg</td>
+                             </tr>
+                         {% empty %}
+                             <tr>
+                                 <td colspan="4" class="py-4 text-center text-gray-500">No leaderboard data available yet.</td>
+                             </tr>
+                         {% endfor %}
+                     </tbody>
+                 </table>
+             </div>
+         </div>
+ 
+         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div class="bg-white rounded-lg shadow-md p-6 card card-gradient-4 animate-on-scroll">
+                 <div class="card-header">
+                     <h3 class="font-bold text-lg mb-2 text-gray-700 section-title">Energy Saving Tips</h3>
+                 </div>
+                 <div class="p-4 bg-white rounded-lg mt-4">
+                     <div class="bg-green-50 p-4 rounded-lg">
+                         <p id="currentTip" class="text-green-800">{{ energy_tip }}</p>
+                         <button id="newTipBtn" class="mt-4 btn-primary">
+                             Get New Tip
+                         </button>
+                     </div>
+                 </div>
+             </div>
+ 
+             <div class="bg-white rounded-lg shadow-md p-6 card animate-on-scroll">
+                 <h3 class="font-bold text-lg mb-4 section-title">Energy Saving Tasks</h3>
+                 <div class="space-y-4">
+                     <ul class="space-y-2">
+                         {% for task in tasks %}
+                             <li class="p-3 bg-gray-50 rounded-lg shadow-sm flex items-center justify-between">
+                                 <div class="flex items-center">
+                                     <form method="POST" action="/task/{{ task.id }}/toggle/" class="mr-3">
+                                         {% csrf_token %}
+                                         <button type="submit" class="w-5 h-5 border border-gray-400 rounded {% if task.completed %}bg-green-500 border-green-500{% endif %}" title="Toggle task completion">
+                                         </button>
+                                     </form>
+                                     <span class="{% if task.completed %}line-through text-gray-500{% endif %}">{{ task.text }}</span>
+                                 </div>
+                                 <form method="POST" action="/task/{{ task.id }}/delete/">
+                                     {% csrf_token %}
+                                     <button type="submit" class="text-red-500 hover:text-red-700" title="Delete task">
+                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                             <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                         </svg>
+                                     </button>
+                                 </form>
+                             </li>
+                         {% empty %}
+                             <li class="p-3 bg-gray-50 rounded-lg text-center text-gray-500">No tasks yet. Add one below!</li>
+                         {% endfor %}
+                     </ul>
+ 
+                     <form id="add-task-form" method="post" action="/task/add/" class="mt-4">
+                         {% csrf_token %}
+                         <div class="flex space-x-2">
+                             <input type="text" name="text" class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" placeholder="Add a new task..." required>
+                             <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none">
+                                 Add Task
+                             </button>
+                         </div>
+                     </form>
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
+ 
+ <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+ <script>
+     // Function to get CSRF token
+     function getCookie(name) {
+         let cookieValue = null;
+         if (document.cookie && document.cookie !== '') {
+             const cookies = document.cookie.split(';');
+             for (let i = 0; i < cookies.length; i++) {
+                 const cookie = cookies[i].trim();
+                 if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                     break;
+                 }
+             }
+         }
+         return cookieValue;
+     }
+ 
+     // Set up CSRF token for AJAX requests
+     const csrftoken = getCookie('csrftoken');
+     $.ajaxSetup({
+         beforeSend: function(xhr, settings) {
+             if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                 xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                 xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+             }
+         }
+     });
+ 
+     $(document).ready(function() {
+         console.log("Document ready");
+ 
+         // Handle task addition
+         $('#add-task-form').submit(function(event) {
+             event.preventDefault();
+             console.log("Add task form submitted");
+             const form = $(this);
+             $.ajax({
+                 type: form.attr('method'),
+                 url: form.attr('action'),
+                 data: form.serialize(),
+                 success: function(response) {
+                     console.log("Task added successfully:", response);
+                     // Update the task list dynamically
+                     if ($('.space-y-2 li').length === 1 && $('.space-y-2 li').text().trim() === 'No tasks yet. Add one below!') {
+                         $('.space-y-2').empty();
+                     }
+                     $('.space-y-2').append(response.new_task_html);
+                     form.find('input[type="text"]').val(''); // Clear input
+                 },
+                 error: function(xhr, status, error) {
+                     console.error("Error adding task:", error);
+                 }
+             });
+         });
+ 
+         // Handle task toggling
+         $('.space-y-2').on('submit', 'form[action^="/task/"][action$="/toggle/"]', function(event) {
+             event.preventDefault();
+             console.log("Toggle task form submitted");
+             const form = $(this);
+             $.ajax({
+                 type: form.attr('method'),
+                 url: form.attr('action'),
+                 data: form.serialize(),
+                 success: function(response) {
+                     console.log("Task toggled successfully:", response);
+                     // Update the task status dynamically
+                     form.closest('li').replaceWith(response.updated_task_html);
+                 },
+                 error: function(xhr, status, error) {
+                     console.error("Error toggling task:", error);
+                 }
+             });
+         });
+ 
+         // Handle task deletion
+         $('.space-y-2').on('submit', 'form[action^="/task/"][action$="/delete/"]', function(event) {
+             event.preventDefault();
+             console.log("Delete task form submitted");
+             const form = $(this);
+             $.ajax({
+                 type: form.attr('method'),
+                 url: form.attr('action'),
+                 data: form.serialize(),
+                 success: function(response) {
+                     console.log("Task deleted successfully");
+                     // Remove the task from the list
+                     form.closest('li').remove();
+                     // If no tasks left, show the "No tasks yet" message
+                     if ($('.space-y-2 li').length === 0) {
+                         $('.space-y-2').html('<li class="p-3 bg-gray-50 rounded-lg text-center text-gray-500">No tasks yet. Add one below!</li>');
+                     }
+                 },
+                 error: function(xhr, status, error) {
+                     console.error("Error deleting task:", error);
+                 }
+             });
+         });
+     });
+ </script>
