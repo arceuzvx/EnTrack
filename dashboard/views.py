@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from django.db.models import Sum, Avg
 import json
 import random
+from django.template.loader import render_to_string
 
 from .models import UserProfile, EnergyData, LeaderboardEntry, Task
 from .forms import UserRegisterForm, UserProfileForm, EnergyDataForm, TaskForm
@@ -66,10 +67,12 @@ def dashboard(request):
     leaderboard_entries = LeaderboardEntry.objects.filter(month=current_month).order_by('rank')[:10]
     
     # Get tasks
-    tasks = Task.objects.filter(user=request.user)
+    tasks = Task.objects.filter(user=request.user).order_by('-created_at')
     
     # Get random energy tip
     energy_tip = random.choice(ENERGY_TIPS)
+    
+    form = TaskForm()
     
     context = {
         'profile': profile,
@@ -77,7 +80,7 @@ def dashboard(request):
         'leaderboard_entries': leaderboard_entries,
         'tasks': tasks,
         'energy_tip': energy_tip,
-        'task_form': TaskForm()
+        'form': form
     }
     
     return render(request, 'dashboard/dashboard.html', context)
@@ -266,7 +269,9 @@ def add_task(request):
             task = form.save(commit=False)
             task.user = request.user
             task.save()
-            messages.success(request, 'Task added successfully!')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                task_html = render_to_string('dashboard/task_item.html', {'task': task}, request=request)
+                return JsonResponse({'new_task_html': task_html})
             return redirect('dashboard')
     return redirect('dashboard')
 
@@ -274,16 +279,24 @@ def add_task(request):
 def toggle_task(request, task_id):
     """Toggle task completion status"""
     task = get_object_or_404(Task, id=task_id, user=request.user)
-    task.completed = not task.completed
-    task.save()
+    if request.method == 'POST':
+        task.completed = not task.completed
+        task.save()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            task_html = render_to_string('dashboard/task_item.html', {'task': task}, request=request)
+            return JsonResponse({'updated_task_html': task_html})
+        return redirect('dashboard')
     return redirect('dashboard')
 
 @login_required
 def delete_task(request, task_id):
     """Delete a task"""
     task = get_object_or_404(Task, id=task_id, user=request.user)
-    task.delete()
-    messages.success(request, 'Task deleted successfully!')
+    if request.method == 'POST':
+        task.delete()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'success'})
+        return redirect('dashboard')
     return redirect('dashboard')
 
 @login_required
