@@ -1,5 +1,6 @@
 {% extends 'dashboard/base.html' %}
 {% load static %}
+{% load crispy_forms_tags %}
 
 {% block title %}Energy History - Entrack{% endblock %}
 
@@ -46,6 +47,19 @@
             <canvas id="historyChart" height="300"></canvas>
         </div>
         
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6 card animate-on-scroll">
+            <h3 class="font-bold text-lg mb-4 section-title">Add New Entry</h3>
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {{ form|crispy }}
+                </div>
+                <button type="submit" class="btn-primary">
+                    Save Entry
+                </button>
+            </form>
+        </div>
+        
         <div class="bg-white rounded-lg shadow-md p-6 card animate-on-scroll">
             <h3 class="font-bold text-lg mb-4 section-title">Recent Entries</h3>
             <div class="overflow-x-auto">
@@ -56,31 +70,95 @@
                             <th class="py-3 px-4 text-right">Electricity (kWh)</th>
                             <th class="py-3 px-4 text-right">Gas (therms)</th>
                             <th class="py-3 px-4 text-right">Energy Saved</th>
+                            <th class="py-3 px-4 text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for data in energy_data %}
-                            <tr class="border-b">
+                            <tr class="border-b" data-entry-id="{{ data.id }}">
                                 <td class="py-3 px-4">{{ data.date|date:"M d, Y" }}</td>
                                 <td class="py-3 px-4 text-right">{{ data.electricity|floatformat:2 }}</td>
                                 <td class="py-3 px-4 text-right">{{ data.gas|floatformat:2 }}</td>
                                 <td class="py-3 px-4 text-right">{{ data.saved|floatformat:2 }} kWh</td>
+                                <td class="py-3 px-4 text-center">
+                                    <form method="POST" action="{% url 'delete_energy_data' data.id %}" class="delete-entry-form inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-red-500 hover:text-red-700" title="Delete entry">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="4" class="py-4 text-center text-gray-500">No energy data available yet. Use the calculator to add your first entry.</td>
+                                <td colspan="5" class="py-4 text-center text-gray-500">No energy data available yet. Use the form above to add your first entry.</td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            
-            <div class="mt-6 text-center">
-                <a href="{% url 'calculator' %}" class="btn-primary">
-                    Add New Entry
-                </a>
-            </div>
         </div>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // Function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Set up CSRF token for AJAX requests
+    const csrftoken = getCookie('csrftoken');
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+            }
+        }
+    });
+
+    $(document).ready(function() {
+        // Handle entry deletion
+        $('.delete-entry-form').on('submit', function(event) {
+            event.preventDefault();
+            if (confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
+                const form = $(this);
+                $.ajax({
+                    type: form.attr('method'),
+                    url: form.attr('action'),
+                    data: form.serialize(),
+                    success: function(response) {
+                        // Remove the entry from the table
+                        form.closest('tr').fadeOut(300, function() {
+                            $(this).remove();
+                            // If no entries left, show the "No entries" message
+                            if ($('tbody tr').length === 0) {
+                                $('tbody').html('<tr><td colspan="5" class="py-4 text-center text-gray-500">No energy data available yet. Use the form above to add your first entry.</td></tr>');
+                            }
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error deleting entry:", error);
+                        alert("There was an error deleting the entry. Please try again.");
+                    }
+                });
+            }
+        });
+    });
+</script>
 {% endblock %} 

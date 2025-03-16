@@ -16,6 +16,7 @@ urlpatterns = [
     path('task/<int:task_id>/toggle/', views.toggle_task, name='toggle_task'),
     path('task/<int:task_id>/delete/', views.delete_task, name='delete_task'),
     path('api/energy-tip/', views.get_energy_tip, name='energy_tip'),
+    path('energy-data/<int:data_id>/delete/', views.delete_energy_data, name='delete_energy_data'),
     
     # New URL patterns for settings functionality
     path('profile/update/', views.update_profile, name='update_profile'),

@@ -229,7 +229,89 @@ def energy_history(request):
     """Energy usage history view"""
     energy_data = EnergyData.objects.filter(user=request.user).order_by('-date')
     
-    return render(request, 'dashboard/history.html', {'energy_data': energy_data})
+    if request.method == 'POST':
+        form = EnergyDataForm(request.POST)
+        if form.is_valid():
+            energy_data_entry = form.save(commit=False)
+            energy_data_entry.user = request.user
+            
+            # Get previous month's data
+            prev_month_data = EnergyData.objects.filter(
+                user=request.user,
+                date__lt=timezone.now()
+            ).order_by('-date').first()
+            
+            if prev_month_data:
+                # Calculate savings compared to previous month
+                elec_saved = max(0, prev_month_data.electricity - energy_data_entry.electricity)
+                gas_saved = max(0, prev_month_data.gas - energy_data_entry.gas)
+                # Convert gas to kWh equivalent (1 therm ≈ 29.3 kWh)
+                energy_data_entry.saved = elec_saved + (gas_saved * 29.3)
+            else:
+                energy_data_entry.saved = (energy_data_entry.electricity * 0.1) + (energy_data_entry.gas * 29.3 * 0.1)
+            
+            energy_data_entry.save()
+            
+            # Update user profile total energy saved
+            profile = request.user.profile
+            profile.total_energy_saved += energy_data_entry.saved
+            profile.save()
+            
+            # Update or create leaderboard entry
+            current_month = timezone.now().replace(day=1)
+            LeaderboardEntry.objects.update_or_create(
+                user=request.user,
+                month=current_month,
+                defaults={
+                    'energy_saved': profile.total_energy_saved,
+                    'co2_reduction': profile.get_co2_reduction()
+                }
+            )
+            
+            # Update leaderboard rankings
+            update_leaderboard_rankings(current_month)
+
+            messages.success(request, 'Energy data saved successfully!')
+            return redirect('history')
+    else:
+        form = EnergyDataForm()
+    
+    return render(request, 'dashboard/history.html', {'energy_data': energy_data, 'form': form})
+
+@login_required
+def delete_energy_data(request, data_id):
+    """Delete an energy data entry"""
+    energy_data = get_object_or_404(EnergyData, id=data_id, user=request.user)
+    
+    if request.method == 'POST':
+        # Subtract the saved energy from the user's total
+        profile = request.user.profile
+        profile.total_energy_saved = max(0, profile.total_energy_saved - energy_data.saved)
+        profile.save()
+        
+        # Delete the entry
+        energy_data.delete()
+        
+        # Update leaderboard entry
+        current_month = timezone.now().replace(day=1)
+        LeaderboardEntry.objects.update_or_create(
+            user=request.user,
+            month=current_month,
+            defaults={
+                'energy_saved': profile.total_energy_saved,
+                'co2_reduction': profile.get_co2_reduction()
+            }
+        )
+        
+        # Update leaderboard rankings
+        update_leaderboard_rankings(current_month)
+        
+        messages.success(request, 'Energy data entry deleted successfully!')
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'success'})
+        
+    return redirect('history')
 
 @login_required
 def get_energy_chart_data(request):

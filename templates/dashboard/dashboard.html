@@ -139,7 +139,7 @@
              <div class="bg-white rounded-lg shadow-md p-6 card animate-on-scroll">
                  <h3 class="font-bold text-lg mb-4 section-title">Energy Saving Tasks</h3>
                  <div class="space-y-4">
-                     <ul class="space-y-2">
+                     <ul class="task-list space-y-2">
                          {% for task in tasks %}
                              <li class="p-3 bg-gray-50 rounded-lg shadow-sm flex items-center justify-between">
                                  <div class="flex items-center">
@@ -223,10 +223,11 @@
                  success: function(response) {
                      console.log("Task added successfully:", response);
                      // Update the task list dynamically
-                     if ($('.space-y-2 li').length === 1 && $('.space-y-2 li').text().trim() === 'No tasks yet. Add one below!') {
-                         $('.space-y-2').empty();
+                     if ($('.task-list li').length === 1 && $('.task-list li').text().trim() === 'No tasks yet. Add one below!') {
+                         $('.task-list').empty();
                      }
-                     $('.space-y-2').append(response.new_task_html);
+                     // Only append to the task list
+                     $('.task-list').append(response.new_task_html);
                      form.find('input[type="text"]').val(''); // Clear input
                  },
                  error: function(xhr, status, error) {
@@ -236,7 +237,7 @@
          });
  
          // Handle task toggling
-         $('.space-y-2').on('submit', 'form[action^="/task/"][action$="/toggle/"]', function(event) {
+         $('.task-list').on('submit', 'form[action^="/task/"][action$="/toggle/"]', function(event) {
              event.preventDefault();
              console.log("Toggle task form submitted");
              const form = $(this);
@@ -256,7 +257,7 @@
          });
  
          // Handle task deletion
-         $('.space-y-2').on('submit', 'form[action^="/task/"][action$="/delete/"]', function(event) {
+         $('.task-list').on('submit', 'form[action^="/task/"][action$="/delete/"]', function(event) {
              event.preventDefault();
              console.log("Delete task form submitted");
              const form = $(this);
@@ -269,8 +270,8 @@
                      // Remove the task from the list
                      form.closest('li').remove();
                      // If no tasks left, show the "No tasks yet" message
-                     if ($('.space-y-2 li').length === 0) {
-                         $('.space-y-2').html('<li class="p-3 bg-gray-50 rounded-lg text-center text-gray-500">No tasks yet. Add one below!</li>');
+                     if ($('.task-list li').length === 0) {
+                         $('.task-list').html('<li class="p-3 bg-gray-50 rounded-lg text-center text-gray-500">No tasks yet. Add one below!</li>');
                      }
                  },
                  error: function(xhr, status, error) {
@@ -280,3 +281,4 @@
          });
      });
  </script>
+{% endblock %}
