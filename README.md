@@ -104,5 +104,4 @@ python manage.py runserver
 - Sylvia Bhattacharjee [@8910sylvia](https://github.com/8910sylvia)
 - Shreya Dutta [@arceuzvx](https://github.com/arceuzvx)
 
-## License
-This project is licensed under the MIT License.
+  # Mega Hackathon 2025
