@@ -94,8 +94,7 @@ def energy_calculator(request):
             energy_data = form.save(commit=False)
             energy_data.user = request.user
             
-            # Calculate energy saved (simplified example)
-            # In a real app, you might compare to previous usage or average usage
+            # Get previous month's data
             prev_month_data = EnergyData.objects.filter(
                 user=request.user,
                 date__lt=timezone.now()
@@ -108,15 +107,16 @@ def energy_calculator(request):
                 # Convert gas to kWh equivalent (1 therm ≈ 29.3 kWh)
                 energy_data.saved = elec_saved + (gas_saved * 29.3)
             else:
-                # Default savings for first entry (10% of current usage)
-                energy_data.saved = (energy_data.electricity * 0.1) + (energy_data.gas * 29.3 * 0.1)
+                # For first entry, set savings to 0 as there's no historical data to compare
+                energy_data.saved = 0
             
             energy_data.save()
             
             # Update user profile total energy saved
             profile = request.user.profile
-            profile.total_energy_saved += energy_data.saved
-            profile.save()
+            if prev_month_data:  # Only update total savings if there's historical data
+                profile.total_energy_saved += energy_data.saved
+                profile.save()
             
             # Update or create leaderboard entry
             current_month = timezone.now().replace(day=1)
@@ -132,7 +132,14 @@ def energy_calculator(request):
             # Update leaderboard rankings
             update_leaderboard_rankings(current_month)
             
-            messages.success(request, 'Energy data saved successfully!')
+            if prev_month_data:
+                messages.success(request, 'Energy data saved successfully! You saved {:.2f} kWh compared to last month, equivalent to {:.1f} trees!'.format(
+                    energy_data.saved, 
+                    (energy_data.saved * 0.92) / 25  # CO2 reduction / 25kg (yearly CO2 absorption per tree)
+                ))
+            else:
+                messages.info(request, 'First energy data entry saved! We\'ll calculate your savings starting from next month.')
+            
             return redirect('dashboard')
     else:
         form = EnergyDataForm()
@@ -140,7 +147,14 @@ def energy_calculator(request):
     # Get random energy tip
     energy_tip = random.choice(ENERGY_TIPS)
     
-    return render(request, 'dashboard/calculator.html', {'form': form, 'energy_tip': energy_tip})
+    # Check if this is the first entry
+    has_previous_data = EnergyData.objects.filter(user=request.user).exists()
+    
+    return render(request, 'dashboard/calculator.html', {
+        'form': form, 
+        'energy_tip': energy_tip,
+        'has_previous_data': has_previous_data
+    })
 
 @login_required
 def user_settings(request):
