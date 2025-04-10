@@ -103,5 +103,3 @@ python manage.py runserver
 - Piyali Sarkar [@loopPXy](https://github.com/loopPXy)
 - Sylvia Bhattacharjee [@8910sylvia](https://github.com/8910sylvia)
 - Shreya Dutta [@arceuzvx](https://github.com/arceuzvx)
-
-  # Mega Hackathon 2025
