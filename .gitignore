@@ -6,6 +6,9 @@ __pycache__/
 .Python
 env/
 *.env
+.env
+.env.local
+.env.production
 build/
 develop-eggs/
 dist/
@@ -28,17 +31,32 @@ var/
 db.sqlite3
 media/
 staticfiles/
+local_settings.py
 
 # Virtual Environment
 venv/
 ENV/
+env/
+.venv/
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
 
 # OS specific
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Security
+*.pem
+*.key
+*.crt
+*.p12
+
+# Deployment
+render.yaml.backup
