@@ -3,7 +3,7 @@ services:
     name: entrack
     env: python
     plan: free
-    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate"
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
     startCommand: "gunicorn entrack.wsgi"
     envVars:
       - key: DATABASE_URL
@@ -11,7 +11,7 @@ services:
           name: entrack-db
           property: connectionString
       - key: SECRET_KEY
-        generateValue: true
+        value: "$zg_!oiik-f1t4h70#eku90501edf4a*9!qp8ckpc+k*r4k6yv"
       - key: DEBUG
         value: "False"
       - key: ALLOWED_HOSTS
