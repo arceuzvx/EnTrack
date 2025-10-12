@@ -5,6 +5,7 @@ __pycache__/
 *.so
 .Python
 env/
+*.env
 build/
 develop-eggs/
 dist/
@@ -40,4 +41,4 @@ ENV/
 
 # OS specific
 .DS_Store
-Thumbs.db 
+Thumbs.db
