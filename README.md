@@ -98,8 +98,3 @@ python manage.py runserver
 - Check that you're using a compatible Python version
 - Ensure all dependencies are installed correctly
 
-## Contributors/Teammates
-- Soumyshree Biswas [@soumyashb](https://github.com/soumyashb)
-- Piyali Sarkar [@loopPXy](https://github.com/loopPXy)
-- Sylvia Bhattacharjee [@8910sylvia](https://github.com/8910sylvia)
-- Shreya Dutta [@arceuzvx](https://github.com/arceuzvx)
