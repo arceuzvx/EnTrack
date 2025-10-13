@@ -11,7 +11,7 @@ services:
           name: entrack-db
           property: connectionString
       - key: SECRET_KEY
-        value: "$zg_!oiik-f1t4h70#eku90501edf4a*9!qp8ckpc+k*r4k6yv"
+        value: "your_secret_key"
       - key: DEBUG
         value: "False"
       - key: ALLOWED_HOSTS
