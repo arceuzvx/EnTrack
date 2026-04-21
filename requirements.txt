@@ -1,7 +1,7 @@
 Django>=4.2.22
 django-crispy-forms==2.0
 crispy-bootstrap4==2022.1
-python-dotenv==1.0.0
+python-dotenv==1.2.2
 psycopg2-binary>=2.9.0
 whitenoise>=6.0.0
 gunicorn>=21.0.0
